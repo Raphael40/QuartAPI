@@ -46,5 +46,18 @@ async def get_cards() -> Cards:
     ]
     return Cards(cards=cards)
 
-
+@app.put("/cards/<int:id>/")
+@validate_request(CardInput)
+@validate_response(Card)
+async def update_card(id: int, data: CardInput) -> Card:
+    result = await g.connection.fetch_one(
+        """UPDATE cards
+            SET question = :question, answer = :answer
+            WHERE id = id
+        RETURNING id, question, answer""",
+            {"id": id, "question": data.question, "answer": data.answer},
+    )
+    if result is None:
+        abort(404)
+    return Card(**result)
 
