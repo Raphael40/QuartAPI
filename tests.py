@@ -73,3 +73,22 @@ async def test_update_cards(test_app: Quart) -> None:
     assert data["answer"] == "Updated test answer"
 
     await test_client.delete("/cards/2/")
+
+@pytest.mark.asyncio
+@pytest.mark.order(5)
+async def test_delete_cards(test_app: Quart) -> None:
+    test_client = test_app.test_client()
+    await test_client.post(
+        "/cards/",
+        json={"question": "test question 3", "answer": "test answer 3"},
+    )
+
+    await test_client.delete("/cards/2/")
+
+    response = await test_client.get("/cards/")
+
+    assert response.status_code == 200
+    data = await response.get_json()
+    print(data)
+    assert len(data['cards']) == 1
+
