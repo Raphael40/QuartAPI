@@ -10,6 +10,7 @@ async def _test_app() -> Quart:
         yield test_app
 
 @pytest.mark.asyncio
+@pytest.mark.order(1)
 async def test_create_card(test_app: Quart) -> None:
     test_client = test_app.test_client()
     response = await test_client.post(
@@ -26,6 +27,7 @@ async def test_create_card(test_app: Quart) -> None:
     await test_client.delete("/cards/2/")
 
 @pytest.mark.asyncio
+@pytest.mark.order(2)
 async def test_create_card_bad_data(test_app: Quart) -> None:
     test_client = test_app.test_client()
     response = await test_client.post(
@@ -35,13 +37,39 @@ async def test_create_card_bad_data(test_app: Quart) -> None:
     assert response.status_code == 400
 
 @pytest.mark.asyncio
+@pytest.mark.order(3)
 async def test_show_cards(test_app: Quart) -> None:
     test_client = test_app.test_client()
     response = await test_client.get("/cards/")
 
     assert response.status_code == 200
     data = await response.get_json()
-    print(data)
     assert "id" in data['cards'][0]
     assert data['cards'][0]["question"] == "Will this work?"
     assert data['cards'][0]["answer"] == "still yes"
+
+@pytest.mark.asyncio
+@pytest.mark.order(4)
+async def test_update_cards(test_app: Quart) -> None:
+    test_client = test_app.test_client()
+    await test_client.post(
+        "/cards/",
+        json={"question": "test question 2", "answer": "test answer 2"},
+    )
+
+    response = await test_client.put(
+        "/cards/2/",
+        json={
+            "answer": "Updated test answer",
+            "question": "Updated test question"
+        }
+    )
+
+    assert response.status_code == 200
+    data = await response.get_json()
+    print(data)
+    assert "id" in data
+    assert data["question"] == "Updated test question"
+    assert data["answer"] == "Updated test answer"
+
+    await test_client.delete("/cards/2/")

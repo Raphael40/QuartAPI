@@ -53,7 +53,7 @@ async def update_card(id: int, data: CardInput) -> Card:
     result = await g.connection.fetch_one(
         """UPDATE cards
             SET question = :question, answer = :answer
-            WHERE id = id
+            WHERE id = :id
         RETURNING id, question, answer""",
             {"id": id, "question": data.question, "answer": data.answer},
     )
