@@ -61,3 +61,10 @@ async def update_card(id: int, data: CardInput) -> Card:
         abort(404)
     return Card(**result)
 
+@app.delete("/cards/<int:id>/")
+async def delete_card(id: int) -> str:
+    await g.connection.execute(
+        "DELETE FROM cards WHERE id = :id",
+        {"id": id}
+    )
+    return ""
